@@ -56,7 +56,7 @@ llm = ChatGroq(
 agent_executor= create_sql_agent(llm=llm, db=db, agent_type="openai-tools", verbose=True)
 
 
-query= "all the user and their name"
+query= "iam moi what is my complaint resolved status"
 
 response = agent_executor.invoke(query)
 print(response)
@@ -76,23 +76,23 @@ print(response)
 
 
 
-def sentiment_analysis(text): 
-    chat = ChatGroq(
-    api_key=os.getenv("GROQ_API_KEY"),
-    model="llama-3.3-70b-versatile",
-    temperature=0
-).bind(response_format={"type": "json_object"})
-    prompt = f"Analyze the sentiment of the following text, find which tone is greater and return the larger tone as a JSON object with keys 'sentiment' with value 'POSITIVE' OR 'NEGATIVE' and key 'confidence' with value 0-100:\n\n\"{text}\""
-# Send request
-    response = chat.invoke([
-    {"role": "system", "content": "You are a sentiment analysis assistant."},
-    {"role": "user", "content": prompt},
-])
-    response_dict = json.loads(response.content)
+# def sentiment_analysis(text): 
+#     chat = ChatGroq(
+#     api_key=os.getenv("GROQ_API_KEY"),
+#     model="llama-3.3-70b-versatile",
+#     temperature=0
+# ).bind(response_format={"type": "json_object"})
+#     prompt = f"Analyze the sentiment of the following text, find which tone is greater and return the larger tone as a JSON object with keys 'sentiment' with value 'POSITIVE' OR 'NEGATIVE' and key 'confidence' with value 0-100:\n\n\"{text}\""
+# # Send request
+#     response = chat.invoke([
+#     {"role": "system", "content": "You are a sentiment analysis assistant."},
+#     {"role": "user", "content": prompt},
+# ])
+#     response_dict = json.loads(response.content)
 
-    return response_dict
+#     return response_dict
 
 
-text = "My order arrived damaged, and no one is helping!"
-response = sentiment_analysis(text)
-print(response)
+# text = "My order arrived damaged, and no one is helping!"
+# response = sentiment_analysis(text)
+# print(response)
