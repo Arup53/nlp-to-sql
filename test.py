@@ -10,6 +10,7 @@ from typing import Dict, Any
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain.prompts import PromptTemplate
 from langchain.agents.agent_types import AgentType
+import re
 import json
 import os
 
@@ -52,20 +53,21 @@ llm = ChatGroq(
 # # Example usage
 # query = "SELECT first_name FROM users LIMIT 1;"
 # response = db_chain.invoke({"query": query})
-template = '''Answer the following questions as best you can. You have access to the following tools:
+template = '''Answer the question using the tools below. 
 
+Tools:
 {tools}
 
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
+Format:
+Question: the input question
+Thought: reasoning step
+Action: one of [{tool_names}]
+Action Input: input to the action
+Observation: result of the action
+... (Repeat Thought/Action/Action Input/Observation as needed)
 Thought: I now know the final answer
-Final Answer: only write the final answer like this- your question answer is ; no input query in final answer
+Final Answer: your question answer is ; no input query in final answer
+
 Begin!
 
 Question: {input}
@@ -80,9 +82,15 @@ toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
 
-query= "I am moi , what is my complaint resolved status?"
+query= "what is my complaint resolved status?"
 
-response = agent_executor.invoke(query)
+def run_agent(user_input):
+    name_pattern = r"\b(my name is|i am|this is|name is)\b"
+    if not re.search(name_pattern, user_input.lower()):
+        return "Please provide your name before I can process your request."
+    return agent_executor.invoke(user_input)
+
+response = run_agent(query)
 print(response)
 
 # from huggingface_hub import InferenceClient
