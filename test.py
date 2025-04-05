@@ -66,7 +66,7 @@ Action Input: input to the action
 Observation: result of the action
 ... (Repeat Thought/Action/Action Input/Observation as needed)
 Thought: I now know the final answer
-Final Answer: your question answer is ; no input query in final answer
+Final Answer: write only the final answer 
 
 Begin!
 
@@ -82,12 +82,30 @@ toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
 
-query= "what is my complaint resolved status?"
+query= "i am moi, what is my complaint resolved status"
 
 def run_agent(user_input):
+    # Check if user provided their name
     name_pattern = r"\b(my name is|i am|this is|name is)\b"
     if not re.search(name_pattern, user_input.lower()):
         return "Please provide your name before I can process your request."
+    
+    # Block potentially dangerous SQL operations
+    dangerous_patterns = [
+        r"\bdelete\b", 
+        r"\bupdate\b", 
+        r"\binsert\b",
+        r"\bcreate\b",
+        r"\bdrop\b",
+        r"\balter\b",
+        r"\btruncate\b",
+        r"\bexec\b"
+    ]
+    
+    for pattern in dangerous_patterns:
+        if re.search(pattern, user_input.lower()):
+            return "Sorry, I cannot process requests that might modify the database."
+    
     return agent_executor.invoke(user_input)
 
 response = run_agent(query)
