@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from typing import Dict, Any
 from langchain_community.agent_toolkits import create_sql_agent
+from langchain.prompts import PromptTemplate
+from langchain.agents.agent_types import AgentType
 import json
 import os
 
@@ -50,13 +52,35 @@ llm = ChatGroq(
 # # Example usage
 # query = "SELECT first_name FROM users LIMIT 1;"
 # response = db_chain.invoke({"query": query})
+template = '''Answer the following questions as best you can. You have access to the following tools:
+
+{tools}
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: only write the final answer like this- your question answer is ; no input query in final answer
+Begin!
+
+Question: {input}
+Thought:{agent_scratchpad}'''
+
+prompt = PromptTemplate.from_template(template)
 
 
+toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 
-agent_executor= create_sql_agent(llm=llm, db=db, agent_type="openai-tools", verbose=True)
+
+agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
 
-query= "iam moi what is my complaint resolved status"
+query= "I am moi , what is my complaint resolved status?"
 
 response = agent_executor.invoke(query)
 print(response)
