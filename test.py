@@ -48,7 +48,9 @@ llm = ChatGroq(
 # # Example usage
 # query = "SELECT first_name FROM users LIMIT 1;"
 # response = db_chain.invoke({"query": query})
-template = '''Answer the question using the tools below. 
+
+def run_sql_agent(query): 
+    template = '''Answer the question using the tools below. 
 
 Tools:
 {tools}
@@ -67,29 +69,17 @@ Begin!
 
 Question: {input}
 Thought:{agent_scratchpad}'''
-
-prompt = PromptTemplate.from_template(template)
-
-
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)
-
-
-agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
-
-
-# query= "i am moi, what is my complaint resolved status"
-# query= "fetch me complaints with greater complaint tone"
-query= "How many complaints"
-
-
-def run_agent(user_input):
+    prompt = PromptTemplate.from_template(template)
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+    agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+    def run_agent(user_input):
     # Check if user provided their name
     # name_pattern = r"\b(my name is|i am|this is|name is)\b"
     # if not re.search(name_pattern, user_input.lower()):
     #     return "Please provide your name before I can process your request."
     
     # Block potentially dangerous SQL operations
-    dangerous_patterns = [
+        dangerous_patterns = [
         r"\bdelete\b", 
         r"\bupdate\b", 
         r"\binsert\b",
@@ -100,14 +90,26 @@ def run_agent(user_input):
         r"\bexec\b"
     ]
     
-    for pattern in dangerous_patterns:
-        if re.search(pattern, user_input.lower()):
-            return "Sorry, I cannot process requests that might modify the database."
-    
-    return agent_executor.invoke(user_input)
+        for pattern in dangerous_patterns:
+             if re.search(pattern, user_input.lower()):
+                 return "Sorry, I cannot process requests that might modify the database."
+             return agent_executor.invoke(user_input)
 
-response = run_agent(query)
-print(response)
+    response = run_agent(query)
+    print(response)
+
+
+# query= "i am moi, what is my complaint resolved status"
+# query= "fetch me complaints with greater complaint tone"
+query= "How many complaints"
+
+run_sql_agent(query)
+
+
+
+
+
+
 
 # from huggingface_hub import InferenceClient
 
