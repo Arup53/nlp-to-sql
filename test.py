@@ -1,17 +1,12 @@
 from langchain_community.utilities import SQLDatabase
 from langchain_groq import ChatGroq
-from langchain.chains import create_sql_query_chain
-from langchain_experimental.sql import SQLDatabaseChain
 from langchain.prompts import PromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from typing import Dict, Any
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain.prompts import PromptTemplate
 from langchain.agents.agent_types import AgentType
 import re
-import json
 import os
 
 load_dotenv()
@@ -82,13 +77,16 @@ toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 agent_executor= create_sql_agent(llm=llm, toolkit=toolkit, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
 
-query= "i am moi, what is my complaint resolved status"
+# query= "i am moi, what is my complaint resolved status"
+# query= "fetch me complaints with greater complaint tone"
+query= "How many complaints"
+
 
 def run_agent(user_input):
     # Check if user provided their name
-    name_pattern = r"\b(my name is|i am|this is|name is)\b"
-    if not re.search(name_pattern, user_input.lower()):
-        return "Please provide your name before I can process your request."
+    # name_pattern = r"\b(my name is|i am|this is|name is)\b"
+    # if not re.search(name_pattern, user_input.lower()):
+    #     return "Please provide your name before I can process your request."
     
     # Block potentially dangerous SQL operations
     dangerous_patterns = [
